@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Settings } from 'lucide-react';
 
 type Node = {
   ID: number;
@@ -13,17 +14,37 @@ type Node = {
   Status: string;
 };
 
+type Config = {
+  flvx_api_key: string;
+  flvx_api_url: string;
+  cf_token: string;
+  domain_name: string;
+  check_api_url: string;
+};
+
 function App() {
   const [status, setStatus] = useState('Loading...');
+  const [nodeStatus, setNodeStatus] = useState('Loading...');
   const [nodes, setNodes] = useState<Node[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
   const [formData, setFormData] = useState({ ip: '', ssh_port: '22', ssh_password: '' });
+  const [configData, setConfigData] = useState<Config>({
+    flvx_api_key: '', flvx_api_url: '', cf_token: '', domain_name: '', check_api_url: ''
+  });
 
   const fetchStatus = () => {
     fetch('/api/status')
       .then(r => r.json())
-      .then(d => setStatus(d.status))
-      .catch(() => setStatus('Error'));
+      .then(d => {
+        setStatus(d.status);
+        setNodeStatus(d.node_status || 'Unknown');
+      })
+      .catch(() => {
+        setStatus('Error');
+        setNodeStatus('Error');
+      });
   };
 
   const fetchNodes = () => {
@@ -33,9 +54,23 @@ function App() {
       .catch(console.error);
   };
 
+  const fetchConfig = () => {
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(d => setConfigData({
+        flvx_api_key: d.flvx_api_key || '',
+        flvx_api_url: d.flvx_api_url || '',
+        cf_token: d.cf_token || '',
+        domain_name: d.domain_name || '',
+        check_api_url: d.check_api_url || '',
+      }))
+      .catch(console.error);
+  };
+
   useEffect(() => {
     fetchStatus();
     fetchNodes();
+    fetchConfig();
     const interval = setInterval(() => {
       fetchStatus();
       fetchNodes();
@@ -64,26 +99,131 @@ function App() {
     }
   };
 
+  const handleSaveConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(configData),
+      });
+      if (res.ok) {
+        setIsSettingsOpen(false);
+        fetchConfig();
+      } else {
+        alert('Failed to save configuration');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error saving configuration');
+    }
+  };
+
   return (
     <div className="container mx-auto p-8 max-w-4xl space-y-8">
-      <h1 className="text-3xl font-bold">Flvx Monitor Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Flvx Monitor Dashboard</h1>
+        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+          <DialogTrigger render={<Button variant="outline" size="icon" />}>
+            <Settings className="h-4 w-4" />
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Settings & Configuration</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSaveConfig} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="flvx_api_url">Flvx API URL</Label>
+                <Input 
+                  id="flvx_api_url" 
+                  value={configData.flvx_api_url} 
+                  onChange={e => setConfigData({...configData, flvx_api_url: e.target.value})} 
+                  placeholder="https://panel.flvx.com/api" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="flvx_api_key">Flvx API Key</Label>
+                <Input 
+                  id="flvx_api_key" 
+                  type="password"
+                  value={configData.flvx_api_key} 
+                  onChange={e => setConfigData({...configData, flvx_api_key: e.target.value})} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cf_token">Cloudflare API Token</Label>
+                <Input 
+                  id="cf_token" 
+                  type="password"
+                  value={configData.cf_token} 
+                  onChange={e => setConfigData({...configData, cf_token: e.target.value})} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="domain_name">Domain Name (for DNS update)</Label>
+                <Input 
+                  id="domain_name" 
+                  value={configData.domain_name} 
+                  onChange={e => setConfigData({...configData, domain_name: e.target.value})} 
+                  placeholder="node.example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="check_api_url">3rd-Party GFW Check API URL</Label>
+                <Input 
+                  id="check_api_url" 
+                  value={configData.check_api_url} 
+                  onChange={e => setConfigData({...configData, check_api_url: e.target.value})} 
+                  placeholder="https://api.itdog.cn/ping"
+                />
+              </div>
+              <Button type="submit" className="w-full">Save Settings</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>System Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-semibold">
-            {status === 'ok' ? (
-              <span className="text-green-600">Online</span>
-            ) : status === 'Error' ? (
-              <span className="text-red-600">Error</span>
-            ) : (
-              <span className="text-gray-500">Loading...</span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>System Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold">
+              {status === 'ok' ? (
+                <span className="text-green-600">Online</span>
+              ) : status === 'Error' ? (
+                <span className="text-red-600">Error</span>
+              ) : (
+                <span className="text-gray-500">Loading...</span>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 mt-2">Go Backend Monitor Daemon</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Flvx Node Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold">
+              {nodeStatus === 'Alive' ? (
+                <span className="text-green-600">Alive</span>
+              ) : nodeStatus === 'Dead' ? (
+                <span className="text-red-600">Dead</span>
+              ) : nodeStatus === 'Blocked' ? (
+                <span className="text-orange-600">Blocked (GFW)</span>
+              ) : nodeStatus === 'Replacing' ? (
+                <span className="text-blue-600">Replacing...</span>
+              ) : (
+                <span className="text-gray-500">{nodeStatus}</span>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 mt-2">Active Node Connectivity</p>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

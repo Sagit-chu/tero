@@ -17,7 +17,7 @@ describe('App Component', () => {
     // Mock fetch to return a promise that never resolves
     (globalThis.fetch as any).mockReturnValue(new Promise(() => {}));
     render(<App />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    expect(screen.getAllByText('Loading...').length).toBeGreaterThan(0);
   });
 
   test('renders success state', async () => {
@@ -25,13 +25,19 @@ describe('App Component', () => {
       if (url === '/api/status') {
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ status: 'ok' }),
+          json: () => Promise.resolve({ status: 'ok', node_status: 'Alive' }),
         });
       }
       if (url === '/api/nodes') {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve([]),
+        });
+      }
+      if (url === '/api/config') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({}),
         });
       }
       return Promise.reject(new Error('not found'));
@@ -41,6 +47,7 @@ describe('App Component', () => {
     
     await waitFor(() => {
       expect(screen.getByText('Online')).toBeInTheDocument();
+      expect(screen.getByText('Alive')).toBeInTheDocument();
     });
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
   });
@@ -50,7 +57,7 @@ describe('App Component', () => {
     render(<App />);
     
     await waitFor(() => {
-      expect(screen.getByText('Error')).toBeInTheDocument();
+      expect(screen.getAllByText('Error').length).toBeGreaterThan(0);
     });
   });
 });

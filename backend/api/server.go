@@ -8,17 +8,20 @@ import (
 )
 
 type Server struct {
-	Router   *http.ServeMux
-	NodeRepo *repository.NodeRepository
+	Router     *http.ServeMux
+	NodeRepo   *repository.NodeRepository
+	ConfigRepo *repository.ConfigRepository
 }
 
-func NewServer(nodeRepo *repository.NodeRepository) *Server {
+func NewServer(nodeRepo *repository.NodeRepository, configRepo *repository.ConfigRepository) *Server {
 	s := &Server{
-		Router:   http.NewServeMux(),
-		NodeRepo: nodeRepo,
+		Router:     http.NewServeMux(),
+		NodeRepo:   nodeRepo,
+		ConfigRepo: configRepo,
 	}
 	s.Router.HandleFunc("/api/status", s.handleStatus)
 	s.Router.HandleFunc("/api/nodes", s.handleNodes)
+	s.Router.HandleFunc("/api/config", s.handleConfig)
 	return s
 }
 
@@ -28,7 +31,10 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	body, err := json.Marshal(map[string]string{"status": "ok"})
+	body, err := json.Marshal(map[string]string{
+		"status":      "ok",
+		"node_status": "Alive", // TODO: Wire to actual monitoring state
+	})
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return

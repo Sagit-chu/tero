@@ -14,11 +14,11 @@ func TestStatusEndpoint(t *testing.T) {
 		expectedStatus int
 		expectedBody   string
 	}{
-		{"Valid GET request", "GET", http.StatusOK, `{"status":"ok"}` + "\n"},
+		{"Valid GET request", "GET", http.StatusOK, `{"node_status":"Alive","status":"ok"}`},
 		{"Invalid POST request", "POST", http.StatusMethodNotAllowed, "Method Not Allowed\n"},
 	}
 
-	srv := NewServer(nil)
+	srv := NewServer(nil, nil)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -29,8 +29,14 @@ func TestStatusEndpoint(t *testing.T) {
 			if rr.Code != tt.expectedStatus {
 				t.Errorf("expected status %v, got %v", tt.expectedStatus, rr.Code)
 			}
-			if rr.Body.String() != tt.expectedBody {
-				t.Errorf("expected body %q, got %q", tt.expectedBody, rr.Body.String())
+			// For the valid GET request, the body includes a newline.
+			// Compare using TrimSpace to avoid newline issues, or exact match if needed.
+			actualBody := rr.Body.String()
+			if tt.expectedStatus == http.StatusOK {
+				actualBody = actualBody[:len(actualBody)-1] // remove newline
+			}
+			if actualBody != tt.expectedBody {
+				t.Errorf("expected body %q, got %q", tt.expectedBody, actualBody)
 			}
 		})
 	}

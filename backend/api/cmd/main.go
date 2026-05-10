@@ -17,8 +17,9 @@ func main() {
 	defer database.Close()
 	
 	nodeRepo := repository.NewNodeRepository(database)
+	configRepo := repository.NewConfigRepository(database)
 
-	srv := api.NewServer(nodeRepo)
+	srv := api.NewServer(nodeRepo, configRepo)
 	log.Println("Starting server on :8080")
 	if err := http.ListenAndServe(":8080", srv.Router); err != nil {
 		log.Fatal(err)
