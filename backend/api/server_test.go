@@ -8,12 +8,30 @@ import (
 )
 
 func TestStatusEndpoint(t *testing.T) {
-	srv := NewServer()
-	req, _ := http.NewRequest("GET", "/api/status", nil)
-	rr := httptest.NewRecorder()
-	srv.Router.ServeHTTP(rr, req)
+	tests := []struct {
+		name           string
+		method         string
+		expectedStatus int
+		expectedBody   string
+	}{
+		{"Valid GET request", "GET", http.StatusOK, `{"status":"ok"}` + "\n"},
+		{"Invalid POST request", "POST", http.StatusMethodNotAllowed, "Method Not Allowed\n"},
+	}
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	srv := NewServer()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, _ := http.NewRequest(tt.method, "/api/status", nil)
+			rr := httptest.NewRecorder()
+			srv.Router.ServeHTTP(rr, req)
+
+			if rr.Code != tt.expectedStatus {
+				t.Errorf("expected status %v, got %v", tt.expectedStatus, rr.Code)
+			}
+			if rr.Body.String() != tt.expectedBody {
+				t.Errorf("expected body %q, got %q", tt.expectedBody, rr.Body.String())
+			}
+		})
 	}
 }
