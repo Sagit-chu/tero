@@ -1,0 +1,25 @@
+package db
+
+import (
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
+)
+
+func InitDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", dsn)
+	if err != nil {
+		return nil, err
+	}
+	schema := `
+	CREATE TABLE IF NOT EXISTS config (key TEXT PRIMARY KEY, value TEXT);
+	CREATE TABLE IF NOT EXISTS nodes (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		ip TEXT NOT NULL,
+		ssh_port TEXT NOT NULL,
+		ssh_password TEXT NOT NULL,
+		status TEXT DEFAULT 'standby'
+	);
+	`
+	_, err = db.Exec(schema)
+	return db, err
+}
