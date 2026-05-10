@@ -15,7 +15,8 @@ type Node = {
 };
 
 type Config = {
-  flvx_api_key: string;
+  flvx_account: string;
+  flvx_password: string;
   flvx_api_url: string;
   cf_token: string;
   domain_name: string;
@@ -31,7 +32,7 @@ function App() {
   
   const [formData, setFormData] = useState({ ip: '', ssh_port: '22', ssh_password: '' });
   const [configData, setConfigData] = useState<Config>({
-    flvx_api_key: '', flvx_api_url: '', cf_token: '', domain_name: '', check_api_url: ''
+    flvx_account: '', flvx_password: '', flvx_api_url: '', cf_token: '', domain_name: '', check_api_url: ''
   });
 
   const fetchStatus = () => {
@@ -58,7 +59,8 @@ function App() {
     fetch('/api/config')
       .then(r => r.json())
       .then(d => setConfigData({
-        flvx_api_key: d.flvx_api_key || '',
+        flvx_account: d.flvx_account || '',
+        flvx_password: d.flvx_password || '',
         flvx_api_url: d.flvx_api_url || '',
         cf_token: d.cf_token || '',
         domain_name: d.domain_name || '',
@@ -142,12 +144,21 @@ function App() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="flvx_api_key">Flvx API Key</Label>
+                <Label htmlFor="flvx_account">Flvx Account</Label>
                 <Input 
-                  id="flvx_api_key" 
+                  id="flvx_account" 
+                  value={configData.flvx_account} 
+                  onChange={e => setConfigData({...configData, flvx_account: e.target.value})} 
+                  placeholder="admin@example.com" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="flvx_password">Flvx Password</Label>
+                <Input 
+                  id="flvx_password" 
                   type="password"
-                  value={configData.flvx_api_key} 
-                  onChange={e => setConfigData({...configData, flvx_api_key: e.target.value})} 
+                  value={configData.flvx_password} 
+                  onChange={e => setConfigData({...configData, flvx_password: e.target.value})} 
                 />
               </div>
               <div className="space-y-2">
@@ -313,3 +324,4 @@ function App() {
 }
 
 export default App;
+ App;

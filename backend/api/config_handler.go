@@ -14,7 +14,7 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		keys := []string{"flvx_api_key", "flvx_api_url", "cf_token", "domain_name", "check_api_url"}
+		keys := []string{"flvx_account", "flvx_password", "flvx_api_url", "cf_token", "domain_name", "check_api_url"}
 		config := make(map[string]string)
 		for _, key := range keys {
 			val, err := s.ConfigRepo.GetConfig(key)
