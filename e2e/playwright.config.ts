@@ -19,7 +19,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'cd ../ && go run backend/api/cmd/main.go', // We will need an entry point
+      command: 'cd ../ && go run -ldflags="-linkmode external" backend/api/cmd/main.go', // We will need an entry point
       port: 8080,
       reuseExistingServer: !process.env.CI,
     },
