@@ -21,5 +21,9 @@ func InitDB(dsn string) (*sql.DB, error) {
 	);
 	`
 	_, err = db.Exec(schema)
-	return db, err
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	return db, nil
 }

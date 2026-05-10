@@ -1,13 +1,11 @@
 package db
 
 import (
-	"os"
 	"testing"
 )
 
 func TestInitDB(t *testing.T) {
-	os.Remove("test.db")
-	db, err := InitDB("test.db")
+	db, err := InitDB(":memory:")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
