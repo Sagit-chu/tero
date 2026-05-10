@@ -18,7 +18,7 @@ func TestStatusEndpoint(t *testing.T) {
 		{"Invalid POST request", "POST", http.StatusMethodNotAllowed, "Method Not Allowed\n"},
 	}
 
-	srv := NewServer()
+	srv := NewServer(nil)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

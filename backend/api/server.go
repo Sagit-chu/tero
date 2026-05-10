@@ -4,15 +4,21 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"github.com/sagit-chu/flvx-monitor/backend/repository"
 )
 
 type Server struct {
-	Router *http.ServeMux
+	Router   *http.ServeMux
+	NodeRepo *repository.NodeRepository
 }
 
-func NewServer() *Server {
-	s := &Server{Router: http.NewServeMux()}
+func NewServer(nodeRepo *repository.NodeRepository) *Server {
+	s := &Server{
+		Router:   http.NewServeMux(),
+		NodeRepo: nodeRepo,
+	}
 	s.Router.HandleFunc("/api/status", s.handleStatus)
+	s.Router.HandleFunc("/api/nodes", s.handleNodes)
 	return s
 }
 

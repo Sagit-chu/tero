@@ -33,3 +33,21 @@ func (r *NodeRepository) GetNextStandby() (*Node, error) {
 	}
 	return &n, nil
 }
+
+func (r *NodeRepository) GetAllNodes() ([]Node, error) {
+	rows, err := r.db.Query("SELECT id, ip, ssh_port, ssh_password, status FROM nodes ORDER BY id DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var nodes []Node
+	for rows.Next() {
+		var n Node
+		if err := rows.Scan(&n.ID, &n.IP, &n.SSHPort, &n.SSHPassword, &n.Status); err != nil {
+			return nil, err
+		}
+		nodes = append(nodes, n)
+	}
+	return nodes, nil
+}

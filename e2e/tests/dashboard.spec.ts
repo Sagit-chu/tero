@@ -8,6 +8,6 @@ test('has title and displays status ok', async ({ page }) => {
   await expect(page).toHaveTitle(/Flvx Monitor Dashboard/);
   
   // Wait for the loading state to disappear and status ok to appear
-  await expect(page.locator('text=System Status:')).toBeVisible();
-  await expect(page.locator('text=ok')).toBeVisible();
+  await expect(page.locator('text=System Status')).toBeVisible();
+  await expect(page.locator('text=Online')).toBeVisible();
 });
