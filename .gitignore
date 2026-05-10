@@ -29,3 +29,7 @@ node_modules/
 main
 server
 tmp_server
+
+# Worktrees
+.worktrees/
+
