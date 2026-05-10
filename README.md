@@ -89,6 +89,7 @@ npx playwright test
 ├── backend/            # Go 后端代码 (API、监控逻辑、数据库、存储库)
 │   ├── api/            # RESTful API 控制器及入口
 │   ├── db/             # SQLite 数据库初始化
+│   ├── monitor/        # 监控循环与两阶段验证逻辑
 │   └── repository/     # 数据库 CRUD 操作
 ├── frontend/           # React 前端代码
 │   ├── src/            # 面板组件及页面
@@ -100,7 +101,8 @@ npx playwright test
 
 ## 📝 待办事项 (TODO)
 
-- [ ] 实现完整的监控循环 (Monitor Loop) 及两阶段验证逻辑。
+- [x] 实现完整的监控循环 (Monitor Loop) 及两阶段验证逻辑。
+- [x] 编写全量测试以及端到端测试 (Playwright)。
 - [ ] 接入 `flvx` API 实现备用节点的自动化替换。
 - [ ] 接入 Cloudflare API 实现 DNS 记录更新。
 - [ ] 完善前端面板的备用节点池管理功能。
