@@ -61,3 +61,20 @@ func (r *NodeRepository) DeleteNode(id int) error {
 	_, err := r.db.Exec("DELETE FROM nodes WHERE id = ?", id)
 	return err
 }
+
+func (r *NodeRepository) GetActiveNode() (string, string, error) {
+	row := r.db.QueryRow("SELECT ip, ssh_port FROM nodes WHERE status = 'active' LIMIT 1")
+	var ip, port string
+	err := row.Scan(&ip, &port)
+	return ip, port, err
+}
+
+func (r *NodeRepository) MarkNodeFailed(ip string) error {
+	_, err := r.db.Exec("UPDATE nodes SET status = 'failed' WHERE ip = ?", ip)
+	return err
+}
+
+func (r *NodeRepository) MarkNodeActive(id int) error {
+	_, err := r.db.Exec("UPDATE nodes SET status = 'active' WHERE id = ?", id)
+	return err
+}
