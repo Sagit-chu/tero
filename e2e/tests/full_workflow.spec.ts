@@ -65,4 +65,31 @@ test.describe('Flvx Monitor Dashboard Full Workflow', () => {
     await expect(page.locator('table')).toContainText('2222');
     await expect(page.locator('table')).toContainText('standby');
   });
+
+  test('should edit and then delete a standby node', async ({ page }) => {
+    // We assume the node from the previous test or a seeded node exists.
+    // Let's add one first just to be sure
+    await page.click('text=Add Node');
+    await page.fill('input#ip', '10.0.0.1');
+    await page.fill('input#port', '22');
+    await page.fill('input#password', 'temp123');
+    await page.click('button:has-text("Save Node")');
+    await expect(page.locator('text=Add Standby Node')).toBeHidden();
+
+    // Now edit it
+    await page.locator('tr', { hasText: '10.0.0.1' }).first().locator('button:has-text("Edit")').first().click();
+    await page.fill('input#ip', '10.0.0.2');
+    await page.fill('input#password', 'newpass123');
+    await page.click('button:has-text("Save Node")');
+    await expect(page.locator('text=Add Standby Node')).toBeHidden();
+    await expect(page.locator('table')).toContainText('10.0.0.2');
+
+    // Now delete it
+    // Playwright needs to accept the confirm dialog automatically
+    page.on('dialog', dialog => dialog.accept());
+    await page.locator('tr', { hasText: '10.0.0.2' }).first().locator('button:has-text("Delete")').first().click();
+    
+    // Verify it's gone
+    await expect(page.locator('table')).not.toContainText('10.0.0.2');
+  });
 });
