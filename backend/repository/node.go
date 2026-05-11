@@ -51,3 +51,13 @@ func (r *NodeRepository) GetAllNodes() ([]Node, error) {
 	}
 	return nodes, nil
 }
+
+func (r *NodeRepository) UpdateNode(id int, ip, port, password string) error {
+	_, err := r.db.Exec("UPDATE nodes SET ip = ?, ssh_port = ?, ssh_password = ? WHERE id = ?", ip, port, password, id)
+	return err
+}
+
+func (r *NodeRepository) DeleteNode(id int) error {
+	_, err := r.db.Exec("DELETE FROM nodes WHERE id = ?", id)
+	return err
+}
