@@ -257,10 +257,10 @@ function App() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Standby Nodes Pool</CardTitle>
+          <Button onClick={() => { setEditingNodeId(null); setFormData({ ip: '', ssh_port: '22', ssh_password: '' }); setIsDialogOpen(true); }}>
+            Add Node
+          </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => { setEditingNodeId(null); setFormData({ ip: '', ssh_port: '22', ssh_password: '' }); }}>Add Node</Button>
-            </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add Standby Node</DialogTitle>
