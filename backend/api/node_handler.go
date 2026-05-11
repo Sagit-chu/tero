@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"github.com/sagit-chu/flvx-monitor/backend/repository"
 )
@@ -43,6 +44,44 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
+	case http.MethodPut:
+		idStr := r.URL.Query().Get("id")
+		if idStr == "" {
+			http.Error(w, "Missing node id", http.StatusBadRequest)
+			return
+		}
+		var id int
+		fmt.Sscanf(idStr, "%d", &id)
+
+		var req struct {
+			IP          string `json:"ip"`
+			SSHPort     string `json:"ssh_port"`
+			SSHPassword string `json:"ssh_password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+		if err := s.NodeRepo.UpdateNode(id, req.IP, req.SSHPort, req.SSHPassword); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+
+	case http.MethodDelete:
+		idStr := r.URL.Query().Get("id")
+		if idStr == "" {
+			http.Error(w, "Missing node id", http.StatusBadRequest)
+			return
+		}
+		var id int
+		fmt.Sscanf(idStr, "%d", &id)
+
+		if err := s.NodeRepo.DeleteNode(id); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	default:
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	}
