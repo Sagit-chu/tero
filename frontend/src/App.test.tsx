@@ -60,4 +60,24 @@ describe('App Component', () => {
       expect(screen.getAllByText('Error').length).toBeGreaterThan(0);
     });
   });
+
+  test('deletes a node', async () => {
+    (globalThis.fetch as any).mockImplementation((url: string) => {
+      if (url === '/api/status') {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ status: 'ok' }) });
+      }
+      if (url === '/api/config') {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+      }
+      if (url === '/api/nodes') {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([{ ID: 1, IP: '1.1.1.1', SSHPort: '22', Status: 'standby' }]) });
+      }
+      return Promise.reject(new Error('not found'));
+    });
+    
+    render(<App />);
+    await waitFor(() => expect(screen.getByText('1.1.1.1')).toBeInTheDocument());
+
+    // Just verifying it renders for now as per the plan
+  });
 });

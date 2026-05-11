@@ -30,6 +30,7 @@ function App() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
+  const [editingNodeId, setEditingNodeId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ ip: '', ssh_port: '22', ssh_password: '' });
   const [configData, setConfigData] = useState<Config>({
     flvx_account: '', flvx_password: '', flvx_api_url: '', cf_token: '', domain_name: '', check_api_url: ''
@@ -80,24 +81,41 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleAddNode = async (e: React.FormEvent) => {
+  const handleSaveNode = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/nodes', {
-        method: 'POST',
+      const url = editingNodeId ? `/api/nodes?id=${editingNodeId}` : '/api/nodes';
+      const method = editingNodeId ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
       if (res.ok) {
         setIsDialogOpen(false);
+        setEditingNodeId(null);
         setFormData({ ip: '', ssh_port: '22', ssh_password: '' });
         fetchNodes();
       } else {
-        alert('Failed to add node');
+        alert('Failed to save node');
       }
     } catch (err) {
       console.error(err);
-      alert('Error adding node');
+      alert('Error saving node');
+    }
+  };
+
+  const handleDeleteNode = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this node?')) return;
+    try {
+      const res = await fetch(`/api/nodes?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchNodes();
+      } else {
+        alert('Failed to delete node');
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -240,14 +258,14 @@ function App() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Standby Nodes Pool</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger render={<Button />}>
-              Add Node
+            <DialogTrigger asChild>
+              <Button onClick={() => { setEditingNodeId(null); setFormData({ ip: '', ssh_port: '22', ssh_password: '' }); }}>Add Node</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add Standby Node</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleAddNode} className="space-y-4">
+              <form onSubmit={handleSaveNode} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="ip">IP Address</Label>
                   <Input 
@@ -289,12 +307,13 @@ function App() {
                 <TableHead>IP Address</TableHead>
                 <TableHead>SSH Port</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {nodes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-gray-500 py-8">
+                  <TableCell colSpan={4} className="text-center text-gray-500 py-8">
                     No nodes in the pool
                   </TableCell>
                 </TableRow>
@@ -311,6 +330,16 @@ function App() {
                       }`}>
                         {node.Status}
                       </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => {
+                          setEditingNodeId(node.ID);
+                          setFormData({ ip: node.IP, ssh_port: node.SSHPort, ssh_password: '' });
+                          setIsDialogOpen(true);
+                        }}>Edit</Button>
+                        <Button variant="destructive" size="sm" onClick={() => handleDeleteNode(node.ID)}>Delete</Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
