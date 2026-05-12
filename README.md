@@ -45,14 +45,14 @@ go run backend/api/cmd/main.go
 
 ### 2. 运行前端面板
 
-确保已安装 Node.js 和 npm。
+确保已安装 Node.js 和 pnpm。
 
 ```bash
 cd frontend
-npm install
+pnpm install
 
 # 启动开发服务器 (默认运行在 5173 端口，会自动代理 /api 请求到后端)
-npm run dev
+pnpm run dev
 ```
 
 打开浏览器访问 `http://localhost:5173` 即可查看 Flvx Monitor 仪表盘。
@@ -106,3 +106,4 @@ npx playwright test
 - [ ] 接入 `flvx` API 实现备用节点的自动化替换。
 - [ ] 接入 Cloudflare API 实现 DNS 记录更新。
 - [ ] 完善前端面板的备用节点池管理功能。
+�能。

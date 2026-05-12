@@ -14,7 +14,7 @@ func TestNodeHandler_Get(t *testing.T) {
 	srv, cleanup := setupTestServer(t)
 	defer cleanup()
 
-	srv.NodeRepo.AddNode("1.1.1.1", "22", "pass")
+	srv.NodeRepo.AddNode("1.1.1.1", "22", "pass", 1, "test")
 
 	req, _ := http.NewRequest(http.MethodGet, "/api/nodes", nil)
 	rr := httptest.NewRecorder()
@@ -71,7 +71,7 @@ func TestNodeHandler_PutAndDelete(t *testing.T) {
 	srv, cleanup := setupTestServer(t)
 	defer cleanup()
 
-	srv.NodeRepo.AddNode("1.1.1.1", "22", "pass")
+	srv.NodeRepo.AddNode("1.1.1.1", "22", "pass", 1, "test")
 	nodes, _ := srv.NodeRepo.GetAllNodes()
 	id := nodes[0].ID
 

@@ -17,7 +17,9 @@ func InitDB(dsn string) (*sql.DB, error) {
 		ip TEXT NOT NULL,
 		ssh_port TEXT NOT NULL,
 		ssh_password TEXT NOT NULL,
-		status TEXT DEFAULT 'standby'
+		status TEXT DEFAULT 'standby',
+		flvx_node_id INTEGER DEFAULT 0,
+		flvx_node_name TEXT DEFAULT ''
 	);
 	`
 	_, err = db.Exec(schema)

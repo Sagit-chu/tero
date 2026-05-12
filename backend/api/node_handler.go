@@ -27,19 +27,21 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(nodes)
 	case http.MethodPost:
 		var req struct {
-			IP          string `json:"ip"`
-			SSHPort     string `json:"ssh_port"`
-			SSHPassword string `json:"ssh_password"`
+			IP           string `json:"ip"`
+			SSHPort      string `json:"ssh_port"`
+			SSHPassword  string `json:"ssh_password"`
+			FlvxNodeID   int    `json:"flvx_node_id"`
+			FlvxNodeName string `json:"flvx_node_name"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
-		if req.IP == "" || req.SSHPort == "" || req.SSHPassword == "" {
+		if req.IP == "" {
 			http.Error(w, "Missing required fields", http.StatusBadRequest)
 			return
 		}
-		if err := s.NodeRepo.AddNode(req.IP, req.SSHPort, req.SSHPassword); err != nil {
+		if err := s.NodeRepo.AddNode(req.IP, req.SSHPort, req.SSHPassword, req.FlvxNodeID, req.FlvxNodeName); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -54,15 +56,17 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 		fmt.Sscanf(idStr, "%d", &id)
 
 		var req struct {
-			IP          string `json:"ip"`
-			SSHPort     string `json:"ssh_port"`
-			SSHPassword string `json:"ssh_password"`
+			IP           string `json:"ip"`
+			SSHPort      string `json:"ssh_port"`
+			SSHPassword  string `json:"ssh_password"`
+			FlvxNodeID   int    `json:"flvx_node_id"`
+			FlvxNodeName string `json:"flvx_node_name"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
-		if err := s.NodeRepo.UpdateNode(id, req.IP, req.SSHPort, req.SSHPassword); err != nil {
+		if err := s.NodeRepo.UpdateNode(id, req.IP, req.SSHPort, req.SSHPassword, req.FlvxNodeID, req.FlvxNodeName); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

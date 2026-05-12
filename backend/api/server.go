@@ -4,20 +4,27 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+
 	"github.com/sagit-chu/flvx-monitor/backend/repository"
 )
+
+type StatusProvider interface {
+	GetLastStatus() string
+}
 
 type Server struct {
 	Router     *http.ServeMux
 	NodeRepo   *repository.NodeRepository
 	ConfigRepo *repository.ConfigRepository
+	StatusProv StatusProvider
 }
 
-func NewServer(nodeRepo *repository.NodeRepository, configRepo *repository.ConfigRepository) *Server {
+func NewServer(nodeRepo *repository.NodeRepository, configRepo *repository.ConfigRepository, statusProv StatusProvider) *Server {
 	s := &Server{
 		Router:     http.NewServeMux(),
 		NodeRepo:   nodeRepo,
 		ConfigRepo: configRepo,
+		StatusProv: statusProv,
 	}
 	s.Router.HandleFunc("/api/status", s.handleStatus)
 	s.Router.HandleFunc("/api/nodes", s.handleNodes)
@@ -30,15 +37,23 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	nodeStatus := "Unknown"
+	if s.StatusProv != nil {
+		nodeStatus = s.StatusProv.GetLastStatus()
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	body, err := json.Marshal(map[string]string{
-		"status":      "ok",
-		"node_status": "Alive", // TODO: Wire to actual monitoring state
+	body, err := json.Marshal(struct {
+		Status     string `json:"status"`
+		NodeStatus string `json:"node_status"`
+	}{
+		Status:     "ok",
+		NodeStatus: nodeStatus,
 	})
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	w.Write(body)
-	w.Write([]byte("\n"))
 }

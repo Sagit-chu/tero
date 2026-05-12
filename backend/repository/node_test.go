@@ -1,4 +1,3 @@
-// backend/repository/node_test.go
 package repository
 
 import (
@@ -20,7 +19,7 @@ func TestNodeRepo(t *testing.T) {
 		t.Fatalf("Expected ErrNoRows, got %v", err)
 	}
 
-	err = repo.AddNode("1.1.1.1", "22", "pass")
+	err = repo.AddNode("1.1.1.1", "22", "pass", 1, "test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,8 +49,8 @@ func TestNodeRepo_GetAllNodes(t *testing.T) {
 		t.Fatalf("Expected 0 nodes, got %d", len(nodes))
 	}
 
-	repo.AddNode("1.1.1.1", "22", "pass")
-	repo.AddNode("2.2.2.2", "22", "pass")
+	repo.AddNode("1.1.1.1", "22", "pass", 1, "test")
+	repo.AddNode("2.2.2.2", "22", "pass", 2, "test2")
 
 	nodes, err = repo.GetAllNodes()
 	if err != nil {
@@ -70,12 +69,12 @@ func TestNodeRepo_UpdateAndDelete(t *testing.T) {
 	defer database.Close()
 	repo := NewNodeRepository(database)
 
-	repo.AddNode("1.1.1.1", "22", "pass")
+	repo.AddNode("1.1.1.1", "22", "pass", 1, "test")
 	nodes, _ := repo.GetAllNodes()
 	id := nodes[0].ID
 
 	// Test Update
-	err = repo.UpdateNode(id, "2.2.2.2", "2222", "newpass")
+	err = repo.UpdateNode(id, "2.2.2.2", "2222", "newpass", 1, "test")
 	if err != nil {
 		t.Fatal(err)
 	}

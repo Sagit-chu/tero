@@ -38,7 +38,7 @@ func main() {
 	flvxClient := flvx.NewClient(flvxURL, flvxAcc, flvxPass)
 	cfClient := cloudflare.NewClient("", cfToken)
 
-	monitorSvc := monitor.NewMonitorService(nodeRepo, pinger, gfw, flvxClient, cfClient, domainName)
+	monitorSvc := monitor.NewMonitorService(nodeRepo, configRepo, pinger, gfw, flvxClient, cfClient, domainName)
 
 	// Run monitor loop in background
 	go func() {
@@ -51,7 +51,7 @@ func main() {
 		}
 	}()
 
-	srv := api.NewServer(nodeRepo, configRepo)
+	srv := api.NewServer(nodeRepo, configRepo, monitorSvc)
 	log.Println("Starting server on :8080")
 	if err := http.ListenAndServe(":8080", srv.Router); err != nil {
 		log.Fatal(err)

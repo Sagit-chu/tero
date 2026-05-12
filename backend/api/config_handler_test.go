@@ -18,7 +18,7 @@ func setupTestServer(t *testing.T) (*Server, func()) {
 
 	nodeRepo := repository.NewNodeRepository(database)
 	configRepo := repository.NewConfigRepository(database)
-	srv := NewServer(nodeRepo, configRepo)
+	srv := NewServer(nodeRepo, configRepo, nil)
 
 	return srv, func() {
 		database.Close()
